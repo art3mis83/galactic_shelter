@@ -1,0 +1,358 @@
+import { Component, OnInit } from '@angular/core';
+import { bootstrapApplication } from '@angular/platform-browser';
+import { CommonModule } from '@angular/common';
+import { Observable } from 'rxjs';
+import { provideHttpClient } from '@angular/common/http';
+
+import { AlienService } from './services/alien.service';
+import { AlienCardComponent } from './components/alien-card.component';
+import { AlienFiltersComponent } from './components/alien-filters.component';
+import { Alien } from './types/alien.interface';
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [CommonModule, AlienCardComponent, AlienFiltersComponent],
+  template: `
+    <div class="app-container">
+      <!-- Header -->
+      <header class="app-header">
+        <div class="container">
+          <div class="header-content">
+            <h1 class="app-title">
+              <span class="title-icon">🛸</span>
+              Galactic Shelter
+            </h1>
+            <p class="app-subtitle">Find your perfect extraterrestrial companion</p>
+          </div>
+          
+          <nav class="app-nav">
+            <button 
+              class="nav-btn"
+              [class.active]="activeTab === 'available'"
+              (click)="setActiveTab('available')"
+            >
+              🌟 Available ({{ availableCount }})
+            </button>
+            <button 
+              class="nav-btn"
+              [class.active]="activeTab === 'adopted'"
+              (click)="setActiveTab('adopted')"
+            >
+              💝 Adopted ({{ adoptedCount }})
+            </button>
+          </nav>
+        </div>
+      </header>
+
+      <!-- Main Content -->
+      <main class="app-main">
+        <div class="container">
+          <!-- Available Aliens Tab -->
+          <div *ngIf="activeTab === 'available'" class="tab-content fade-in">
+            <app-alien-filters
+              [species]="allSpecies"
+              [planets]="allPlanets"
+              [resultCount]="filteredAliens.length"
+              (filtersChange)="onFiltersChange($event)"
+            ></app-alien-filters>
+
+            <div class="aliens-grid grid grid-3" *ngIf="filteredAliens.length > 0">
+              <app-alien-card
+                *ngFor="let alien of filteredAliens; trackBy: trackByAlienId"
+                [alien]="alien"
+                [showAdoptButton]="true"
+                [showReleaseButton]="false"
+                (adopt)="adoptAlien($event)"
+              ></app-alien-card>
+            </div>
+
+            <div *ngIf="filteredAliens.length === 0" class="empty-state">
+              <div class="empty-icon">🔍</div>
+              <h3>No aliens match your criteria</h3>
+              <p>Try adjusting your filters or check back later for new arrivals!</p>
+            </div>
+          </div>
+
+          <!-- Adopted Aliens Tab -->
+          <div *ngIf="activeTab === 'adopted'" class="tab-content fade-in">
+            <div class="adopted-header">
+              <h2>Your Adopted Companions</h2>
+              <p *ngIf="adoptedAliens.length > 0">
+                Thank you for giving these aliens a loving home! 💖
+              </p>
+            </div>
+
+            <div class="aliens-grid grid grid-3" *ngIf="adoptedAliens.length > 0">
+              <app-alien-card
+                *ngFor="let alien of adoptedAliens; trackBy: trackByAlienId"
+                [alien]="alien"
+                [showAdoptButton]="false"
+                [showReleaseButton]="true"
+                (release)="releaseAlien($event)"
+              ></app-alien-card>
+            </div>
+
+            <div *ngIf="adoptedAliens.length === 0" class="empty-state">
+              <div class="empty-icon">💝</div>
+              <h3>No adopted aliens yet</h3>
+              <p>Visit the available aliens section to find your first companion!</p>
+              <button class="btn btn-primary mt-4" (click)="setActiveTab('available')">
+                Browse Available Aliens
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Footer -->
+      <footer class="app-footer">
+        <div class="container">
+          <p>&copy; 2025 Galactic Shelter - Connecting hearts across the cosmos ✨</p>
+        </div>
+      </footer>
+    </div>
+  `,
+  styles: [`
+    .app-container {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .app-header {
+      background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 40px 0;
+    }
+
+    .header-content {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .app-title {
+      font-size: 3rem;
+      font-weight: 900;
+      margin: 0;
+      background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .title-icon {
+      font-size: 3.5rem;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .app-subtitle {
+      font-size: 1.2rem;
+      color: var(--text-secondary);
+      margin: 8px 0 0 0;
+    }
+
+    .app-nav {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .nav-btn {
+      padding: 12px 24px;
+      border: 2px solid var(--border);
+      border-radius: 999px;
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: inherit;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .nav-btn:hover {
+      border-color: var(--primary);
+      color: var(--text-primary);
+      transform: translateY(-2px);
+    }
+
+    .nav-btn.active {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      border-color: var(--primary);
+      color: white;
+      box-shadow: var(--shadow-glow);
+    }
+
+    .app-main {
+      flex: 1;
+      padding: 40px 0;
+    }
+
+    .tab-content {
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    .aliens-grid {
+      margin-top: 32px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 80px 20px;
+      color: var(--text-secondary);
+    }
+
+    .empty-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+    }
+
+    .empty-state h3 {
+      font-size: 1.5rem;
+      margin: 0 0 12px 0;
+      color: var(--text-primary);
+    }
+
+    .empty-state p {
+      font-size: 1.1rem;
+      max-width: 400px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    .adopted-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .adopted-header h2 {
+      font-size: 2rem;
+      margin: 0 0 12px 0;
+    }
+
+    .adopted-header p {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+    }
+
+    .app-footer {
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border);
+      padding: 24px 0;
+      text-align: center;
+      color: var(--text-muted);
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+
+    @media (max-width: 768px) {
+      .app-title {
+        font-size: 2rem;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .title-icon {
+        font-size: 2.5rem;
+      }
+
+      .app-nav {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .nav-btn {
+        width: 200px;
+      }
+    }
+  `]
+})
+export class App implements OnInit {
+  activeTab: 'available' | 'adopted' = 'available';
+  
+  allAliens: Alien[] = [];
+  availableAliens: Alien[] = [];
+  adoptedAliens: Alien[] = [];
+  filteredAliens: Alien[] = [];
+  
+  allSpecies: string[] = [];
+  allPlanets: string[] = [];
+  
+  availableCount = 0;
+  adoptedCount = 0;
+
+  constructor(private alienService: AlienService) {}
+
+  ngOnInit() {
+    this.loadData();
+    
+    // Subscribe to changes
+    this.alienService.aliens$.subscribe(aliens => {
+      this.allAliens = aliens;
+      this.availableAliens = aliens.filter(a => !a.isAdopted);
+      this.updateFilteredAliens();
+      this.availableCount = this.availableAliens.length;
+    });
+
+    this.alienService.adoptedAliens$.subscribe(adopted => {
+      this.adoptedAliens = adopted;
+      this.adoptedCount = adopted.length;
+    });
+  }
+
+  private loadData() {
+    this.allAliens = this.alienService.getAliens();
+    this.alienService.getCreatures();
+    this.availableAliens = this.alienService.getAvailableAliens();
+    this.adoptedAliens = this.alienService.getAdoptedAliens();
+    this.allSpecies = this.alienService.getSpecies();
+    this.allPlanets = this.alienService.getPlanets();
+    
+    this.updateFilteredAliens();
+    this.availableCount = this.availableAliens.length;
+    this.adoptedCount = this.adoptedAliens.length;
+  }
+
+  setActiveTab(tab: 'available' | 'adopted') {
+    this.activeTab = tab;
+  }
+
+  onFiltersChange(filters: {species?: string, planet?: string}) {
+    this.filteredAliens = this.alienService.filterAliens(filters.species, filters.planet);
+  }
+
+  private updateFilteredAliens() {
+    this.filteredAliens = this.availableAliens;
+  }
+
+  adoptAlien(alienId: string) {
+    if (this.alienService.adoptAlien(alienId)) {
+      // Show success feedback (you could add a toast notification here)
+      console.log('Alien adopted successfully!');
+    }
+  }
+
+  releaseAlien(alienId: string) {
+    if (this.alienService.releaseAlien(alienId)) {
+      // Show success feedback
+      console.log('Alien released successfully!');
+    }
+  }
+
+  trackByAlienId(index: number, alien: Alien): string {
+    return alien.id;
+  }
+}
+
+bootstrapApplication(App, {
+    providers: [
+      provideHttpClient()
+    ]
+  });
