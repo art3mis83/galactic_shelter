@@ -1,0 +1,69 @@
+<div class="modal-overlay" (click)="onClose()">
+  <div class="modal-content">
+    <button class="close-button" (click)="onClose()">✕</button>
+
+    <div class="modal-body">
+      <div class="alien-image">
+        <img [src]="creature()?.image" [alt]="creature()?.name" />
+        <div class="status-badge" [class.adopted]="creature()?.isAdopted">
+          {{ creature()?.isAdopted ? 'Adopté' : 'Disponible' }}
+        </div>
+      </div>
+
+      <div class="alien-details">
+        <h2>{{ creature()?.name }}</h2>
+        <div class="basic-info">
+          <p><strong>Espèce:</strong> {{ creature()?.species }}</p>
+          <p><strong>Planète:</strong> {{ creature()?.planet }}</p>
+          <p><strong>Âge:</strong> {{ creature()?.age }} ans galactiques</p>
+        </div>
+
+        <div class="description">
+          <h3>Description</h3>
+          <p>{{ creature()?.description }}</p>
+        </div>
+
+        <div class="abilities">
+          <h3>Capacités spéciales</h3>
+          <div class="ability-list">
+            @for (ability of creature()?.specialAbilities; track ability) {
+            <div class="ability-item">
+              ✨ {{ ability }}
+            </div>
+            }
+
+          </div>
+        </div>
+
+        @if (creature()?.isAdopted) {
+          <div class="adoption-info">
+            <h3>Informations d'adoption</h3>
+            <p><strong>Adopté par : </strong>{{ creature()?.adoptedBy}} </p>
+            <p><strong>Date d'adoption : </strong> {{ creature()?.adoptedDate | date: 'dd/MM/yyyy' }}</p>
+          </div>
+        } @else {
+          <button (click)="onAdopt()"
+                  class="adopt-btn">
+            🚀 Adopter {{ creature()?.name }}
+          </button>
+        }
+
+
+<!--        <div class="modal-actions">-->
+<!--          <button *ngIf="!alien.adopted && !isAuthenticated"-->
+<!--                  (click)="onLoginRequired()"-->
+<!--                  class="login-required-btn">-->
+<!--            Connexion requise pour adopter-->
+<!--          </button>-->
+
+
+
+
+<!--          <div *ngIf="alien.adopted" class="adopted-message">-->
+<!--            ❤️ {{ alien.name }} a trouvé une famille !-->
+<!--          </div>-->
+<!--        </div>-->
+      </div>
+    </div>
+  </div>
+</div>

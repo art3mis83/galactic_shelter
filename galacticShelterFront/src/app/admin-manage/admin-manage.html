@@ -1,0 +1,179 @@
+<div class="manage-container">
+  <div class="manage-header">
+    <button (click)="goBack()" class="back-btn">
+      ← Retour au tableau de bord
+    </button>
+    <h1>🛸 Gestion des Creatures</h1>
+    <p>Ajoutez de nouveaux creatures au refuge ou modifiez les informations existantes</p>
+  </div>
+
+  <div class="manage-content">
+    <div class="form-section">
+      <h2>{{ editingCreature ? 'Modifier' : 'Ajouter' }} un Creature</h2>
+
+      <form (ngSubmit)="onSubmit()" class="creature-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="name">Nom *</label>
+            <input
+              type="text"
+              id="name"
+              [(ngModel)]="formData.name"
+              name="name"
+              required
+              class="form-input"
+              placeholder="Ex: Zyx">
+          </div>
+
+          <div class="form-group">
+            <label for="species">Espèce *</label>
+            <input
+              type="text"
+              id="species"
+              [(ngModel)]="formData.species"
+              name="species"
+              required
+              class="form-input"
+              placeholder="Ex: Crystalline">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="planet">Planète d'origine *</label>
+            <input
+              type="text"
+              id="planet"
+              [(ngModel)]="formData.planet"
+              name="planet"
+              required
+              class="form-input"
+              placeholder="Ex: Xerion Prime">
+          </div>
+
+          <div class="form-group">
+            <label for="age">Âge (années galactiques) *</label>
+            <input
+              type="number"
+              id="age"
+              [(ngModel)]="formData.age"
+              name="age"
+              required
+              min="1"
+              class="form-input"
+              placeholder="Ex: 156">
+          </div>
+
+          <div class="form-group">
+            <label for="rarity">Rareté *</label>
+            <select id="rarity" [(ngModel)]="selectedRarity" name="rarity" class="form-input">
+              @for (rarity of rarities; track rarity) {
+                <option [value]="rarity">{{ rarity }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="danger">Niveau dangerosité *</label>
+            <select id="danger" [(ngModel)]="selectedDangerLevel" name="danger" class="form-input">
+              @for (dangerLevel of dangerLevels; track dangerLevel) {
+                <option [value]="dangerLevel">{{ dangerLevel }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+
+        <div class="form-group">
+          <label for="image">URL de l'image *</label>
+          <input type="file"
+                 id="image"
+                 (change)="onFileSelected($event)"
+                 required
+                 class="form-input"
+                 accept="image/*" />
+          <div class="image-preview" >
+<!--            *ngIf="formData.image" (error)="onImageError()"-->
+<!--            <img [src]="imageSelected" [alt]="formData.name" >-->
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Description *</label>
+          <textarea
+            id="description"
+            [(ngModel)]="formData.description"
+            name="description"
+            required
+            rows="4"
+            class="form-textarea"
+            placeholder="Décrivez les caractéristiques et la personnalité de cet creature..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="abilities">Capacités spéciales (séparées par des virgules) *</label>
+          <input
+            type="text"
+            id="abilities"
+            [(ngModel)]="abilitiesString"
+            name="abilities"
+            required
+            class="form-input"
+            placeholder="Ex: Télépathie, Guérison cristalline, Création musicale">
+        </div>
+
+        <div *ngIf="errorMessage" class="error-message">
+          {{ errorMessage }}
+        </div>
+
+        <div *ngIf="successMessage" class="success-message">
+          {{ successMessage }}
+        </div>
+
+        <div class="form-actions">
+          <button type="button" (click)="resetForm()" class="cancel-btn">
+            Annuler
+          </button>
+          <button type="submit" class="submit-btn">
+            {{ editingCreature ? 'Modifier' : 'Ajouter' }} l'Creature
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div class="creatures-list">
+      <h2>Creatures au refuge ({{ creatures.length }})</h2>
+
+      <div class="creatures-grid">
+        @for (creature of creatures; track creature.id) {
+          <div class="creature-item">
+            @if (creature.image) {
+              <img [src]="creature.image" alt="Creature image" class="creature-thumb" />
+            }
+            <div class="creature-info">
+              <h3>{{ creature.name }}</h3>
+              <p>{{ creature.species }} - {{ creature.planet }}</p>
+              <span class="status" [class.adopted]="creature.isAdopted">
+                  {{ creature.isAdopted ? 'Adopté' : 'Disponible' }}
+                </span>
+            </div>
+            <div class="creature-actions">
+              <button (click)="editCreature(creature)" class="edit-btn" title="Modifier">
+                ✏️
+              </button>
+              <button (click)="deleteCreature(creature)" class="delete-btn" title="Supprimer">
+                🗑️
+              </button>
+            </div>
+          </div>
+
+        }
+      </div>
+
+
+      <div *ngIf="creatures.length === 0" class="no-creatures">
+        <p>🛸 Aucun creature au refuge pour le moment</p>
+      </div>
+    </div>
+  </div>
+</div>

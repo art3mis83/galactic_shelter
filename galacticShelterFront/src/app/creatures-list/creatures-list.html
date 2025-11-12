@@ -1,0 +1,24 @@
+
+@if (isLogged) {
+  <h1 >Mes créatures </h1>
+  <div class="creatures-grid grid grid-3">
+
+    @for (creature of myCreatures$; track creature.name) {
+      <app-creature-card [creature] = "creature" (click)="openDetail(creature.id)"></app-creature-card>
+    }
+  </div>
+}
+
+<h1>Toutes créatures </h1>
+<div class="creatures-grid grid grid-3">
+  @for (creature of creatures$; track creature.name) {
+    <app-creature-card [creature] = "creature" (click)="openDetail(creature.id)"></app-creature-card>
+  }
+
+  @if (selectedCreatureId() !== null) {
+    <app-creature-detail
+      [id]="selectedCreatureId()!"
+      (closeDetail)="closeDetail()">
+    </app-creature-detail>
+  }
+</div>

@@ -1,0 +1,65 @@
+<div class="card creature-card fade-in" [class.glow]="creature.rarity === Rarity.Legendary">
+  <div class="creature-image-container">
+    <img [src]="creature.image" [alt]="creature.name" class="creature-image">
+    <div class="status-badge" [class.adopted]="creature.isAdopted">
+      {{ creature.isAdopted ? 'Adopté' : 'Disponible' }}
+    </div>
+    <div class="rarity-badge" [class]="'badge-' + getRarityClass()">
+      {{ creature.rarity }}
+    </div>
+  </div>
+
+  <div class="creature-info">
+    <h3 class="creature-name">{{ creature.name }}</h3>
+    <p class="creature-species">{{ creature.species }} venant de {{ creature.planet }}</p>
+<!--    <p class="creature-age">{{ creature.age }} Earth years old</p>-->
+
+<!--    <p class="creature-description">{{ creature.description }}</p>-->
+
+<!--    <div class="creature-traits">-->
+<!--      <div class="trait-section">-->
+<!--        <h4>Personality</h4>-->
+<!--        <div class="traits-list">-->
+<!--          @for (trait of creature.personality; track creature.name) {-->
+<!--          <span class="badge badge-secondary" {{ trait }}></span>-->
+<!--          }-->
+<!--        </div>-->
+<!--      </div>-->
+<!--    </div>-->
+
+<!--      <div class="trait-section">-->
+<!--        <h4>Special Abilities</h4>-->
+<!--        <div class="traits-list">-->
+<!--          <span class="badge badge-primary" @for (ability of creature.specialAbilities; track creature.name) {-->
+<!--                {{ ability }}-->
+<!--                }></span>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--    </div>-->
+
+    <div class="creature-footer">
+
+<!--      <button-->
+<!--        *ngIf="!creature.isAdopted && showAdoptButton"-->
+<!--        class="btn btn-primary adopt-btn"-->
+<!--        (click)="onAdopt()"-->
+<!--      >-->
+<!--        <span>🛸</span> Adopt {{ creature.name }}-->
+<!--      </button>-->
+
+<!--      <button-->
+<!--        *ngIf="creature.isAdopted && showReleaseButton"-->
+<!--        class="btn btn-accent release-btn"-->
+<!--        (click)="onRelease()"-->
+<!--      >-->
+<!--        <span>💫</span> Release {{ creature.name }}-->
+<!--      </button>-->
+
+<!--      <div *ngIf="creature.isAdopted && !showReleaseButton" class="adopted-badge">-->
+<!--            <span class="badge badge-success">-->
+<!--              ✨ Adopted {{ creature.adoptedDate | date:'shortDate' }}-->
+<!--            </span>-->
+<!--      </div>-->
+    </div>
+  </div>
+</div>

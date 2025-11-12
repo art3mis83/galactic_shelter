@@ -1,0 +1,31 @@
+<header class="app-header">
+  <div class="container">
+    <div class="header-content">
+      <h1 class="app-title"><span class="title-icon">🛸</span>Galactic Shelter<span class="title-icon">🛸</span></h1>
+      <p class="app-subtitle">Trouvez votre compagnon extraterrestre</p>
+
+
+      <nav class="nav">
+        <a routerLink="/creatures" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link">
+          Accueil
+        </a>
+
+        @if (!(authService.currentUser$ | async)) {
+          <a routerLink="/login" routerLinkActive="active" class="nav-link">
+            Connexion
+          </a>
+        }
+
+        @if (authService.currentUser$ | async; ) {
+          @if (authService.hasRole('ADMIN')) {
+            <a routerLink="/admin" routerLinkActive="active" class="nav-link">
+              Admin
+            </a>
+          }
+          <span class="username">👤</span>
+          <button (click)="logout()" class="logout-btn">Déconnexion</button>
+        }
+      </nav>
+    </div>
+  </div>
+</header>

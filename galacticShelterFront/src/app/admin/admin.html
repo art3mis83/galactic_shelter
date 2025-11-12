@@ -1,0 +1,103 @@
+<div class="admin-container">
+  <div class="admin-header">
+    <h1>🚀 Administration Galactic Shelter</h1>
+    <p>Gérez les adoptions et surveillez le bien-être de nos creatures</p>
+    <div class="admin-actions">
+      <a routerLink="/admin/manage" class="manage-btn">
+        ➕ Gérer les Creatures
+      </a>
+    </div>
+  </div>
+
+  <div class="stats-dashboard">
+    <div class="stat-card available">
+      <div class="stat-icon">🛸</div>
+      <div class="stat-content">
+        <h3>{{ availableCreatures.length }}</h3>
+        <p>Creatures disponibles</p>
+      </div>
+    </div>
+
+    <div class="stat-card adopted">
+      <div class="stat-icon">❤️</div>
+      <div class="stat-content">
+        <h3>{{ adoptedCreatures.length }}</h3>
+        <p>Creatures adoptés</p>
+      </div>
+    </div>
+
+    <div class="stat-card total">
+      <div class="stat-icon">🌌</div>
+      <div class="stat-content">
+        <h3>{{ totalCreatures }}</h3>
+        <p>Total au refuge</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="admin-sections">
+    <section class="creatures-section">
+      <h2>🆕 Creatures disponibles à l'adoption</h2>
+      <div class="creatures-table">
+        <div class="table-header">
+          <span>Photo</span>
+          <span>Nom</span>
+          <span>Espèce</span>
+          <span>Planète</span>
+          <span>Âge</span>
+          <span>Status</span>
+        </div>
+        @for (creature of availableCreatures; track creature.id){
+          <div class="table-row">
+            <img [src]="creature.image" [alt]="creature.name" class="creature-thumbnail">
+            <span class="creature-name">{{ creature.name }}</span>
+            <span>{{ creature.species }}</span>
+            <span>{{ creature.planet }}</span>
+            <span>{{ creature.age }} ans</span>
+            <span class="status available">Disponible</span>
+          </div>
+        }
+
+      </div>
+
+      @if (availableCreatures.length === 0) {
+        <div class="no-data">
+          <p>🎉 Tous nos creatures ont trouvé une famille !</p>
+        </div>
+      }
+
+    </section>
+
+    <section class="creatures-section">
+      <h2>✅ Creatures adoptés</h2>
+      <div class="creatures-table">
+        <div class="table-header">
+          <span>Photo</span>
+          <span>Nom</span>
+          <span>Espèce</span>
+          <span>Adopté par</span>
+          <span>Date d'adoption</span>
+          <span>Status</span>
+        </div>
+        @for (creature of adoptedCreatures; track creature.id) {
+          <div class="table-row">
+            <img [src]="creature.image" [alt]="creature.name" class="creature-thumbnail">
+            <span class="creature-name">{{ creature.name }}</span>
+            <span>{{ creature.species }}</span>
+            <span class="adopter">{{ creature.adoptedBy }}</span>
+            <span>{{ creature.adoptedDate | date: 'dd/MM/yyyy' }}</span>
+            <span class="status adopted">Adopté</span>
+          </div>
+        }
+
+      </div>
+
+      @if (adoptedCreatures.length === 0){
+        <div class="no-data">
+          <p>😢 Aucune adoption pour le moment</p>
+        </div>
+      }
+
+    </section>
+  </div>
+</div>
