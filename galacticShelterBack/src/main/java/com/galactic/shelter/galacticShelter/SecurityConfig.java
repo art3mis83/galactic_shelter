@@ -25,7 +25,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/creatures/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/actuator/**").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/creatures/*/adopt").authenticated()
                         .requestMatchers(HttpMethod.GET, "/admin").hasRole(UserRole.ADMIN.name())
                         .requestMatchers(HttpMethod.DELETE, "/creatures/**").hasRole(UserRole.ADMIN.name())
