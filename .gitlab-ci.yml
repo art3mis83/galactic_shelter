@@ -47,30 +47,30 @@ build_frontend:
 # ------------------------------------------------------
 # 3) UNIT TESTS (Backend + Front)
 # ------------------------------------------------------
-#unit_backend:
-#  stage: unit
-#  image: maven:3.9.9-eclipse-temurin-21
-#  script:
-#    - cd $BACKEND_DIR
-#    - mvn test
-#  artifacts:
-#    when: always
-#    reports:
-#      junit:
-#        - $BACKEND_DIR/target/surefire-reports/*.xml
-#
-#unit_frontend:
-#  stage: unit
-#  image: node:20
-#  before_script:
-#    - apt-get update && apt-get install -y wget gnupg
-#    - wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add -
-#    - sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
-#    - apt-get update && apt-get install -y google-chrome-stable
-#  script:
-#    - cd $FRONTEND_DIR
-#    - npm ci
-#    - npm run test:unit
+unit_backend:
+  stage: unit
+  image: maven:3.9.9-eclipse-temurin-21
+  script:
+    - cd $BACKEND_DIR
+    - mvn test
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - $BACKEND_DIR/target/surefire-reports/*.xml
+
+unit_frontend:
+  stage: unit
+  image: node:20
+  before_script:
+    - apt-get update && apt-get install -y wget gnupg
+    - wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add -
+    - sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
+    - apt-get update && apt-get install -y google-chrome-stable
+  script:
+    - cd $FRONTEND_DIR
+    - npm ci
+    - npm run test:unit
 
 # ------------------------------------------------------
 # 4) INTEGRATION TESTS (Spring Boot Test)
