@@ -1,0 +1,144 @@
+stages:
+  - build
+  - unit
+  - integration
+  - api
+  - e2e
+
+variables:
+  BACKEND_DIR: "galacticShelterBack"
+  FRONTEND_DIR: "galacticShelterFront"
+  FRONTEND_DIST: "galacticShelterFront/dist/galacticFront/browser"
+
+cache:
+  paths:
+    - ~/.m2/repository
+    - $FRONTEND_DIR/node_modules
+
+# ------------------------------------------------------
+# 1) BUILD BACKEND
+# ------------------------------------------------------
+build_backend:
+  stage: build
+  image: maven:3.9.9-eclipse-temurin-21
+  script:
+    - cd $BACKEND_DIR
+    - mvn clean package -DskipTests
+  artifacts:
+    paths:
+      - $BACKEND_DIR/target/*.jar
+    expire_in: 1 hour
+
+# ------------------------------------------------------
+# 2) BUILD FRONTEND
+# ------------------------------------------------------
+build_frontend:
+  stage: build
+  image: node:20
+  script:
+    - cd $FRONTEND_DIR
+    - npm ci
+    - npm run build
+  artifacts:
+    paths:
+      - $FRONTEND_DIST
+    expire_in: 1 hour
+
+# ------------------------------------------------------
+# 3) UNIT TESTS (Backend + Front)
+# ------------------------------------------------------
+#unit_backend:
+#  stage: unit
+#  image: maven:3.9.9-eclipse-temurin-21
+#  script:
+#    - cd $BACKEND_DIR
+#    - mvn test
+#  artifacts:
+#    when: always
+#    reports:
+#      junit:
+#        - $BACKEND_DIR/target/surefire-reports/*.xml
+#
+#unit_frontend:
+#  stage: unit
+#  image: node:20
+#  before_script:
+#    - apt-get update && apt-get install -y wget gnupg
+#    - wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add -
+#    - sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
+#    - apt-get update && apt-get install -y google-chrome-stable
+#  script:
+#    - cd $FRONTEND_DIR
+#    - npm ci
+#    - npm run test:unit
+
+# ------------------------------------------------------
+# 4) INTEGRATION TESTS (Spring Boot Test)
+# ------------------------------------------------------
+integration_backend:
+  stage: integration
+  image: maven:3.9.9-eclipse-temurin-21
+  script:
+    - cd $BACKEND_DIR
+    - mvn verify -Pintegration
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - $BACKEND_DIR/target/failsafe-reports/*.xml
+
+# ------------------------------------------------------
+# 5) API TESTS (Postman/Newman)
+# ------------------------------------------------------
+api_tests:
+  stage: api
+  image:
+    name: cypress/included:15.2.0
+    entrypoint: [ "" ]
+  before_script:
+    - apt-get update && apt-get install -y openjdk-21-jdk # Installe OpenJDK 17
+    - cp ${BACKEND_DIR}/target/*.jar ./backend.jar
+    - echo "Attempting to start backend..."
+    - java -jar backend.jar > backend.log 2>&1 & # Lance le backend
+    - echo "Backend started in background" # Affiche le PID du processus
+    - npm install -g wait-on http-server # Installe ces utilitaires globalement pour npx
+
+  script:
+    - npx wait-on http://127.0.0.1:9000/actuator/health --timeout 60000
+    - echo "Running Postman API tests with Newman..."
+    - cd ${BACKEND_DIR} # Assurez-vous d'être dans le bon répertoire pour la collection Postman
+    - npm install -g newman # Mieux d'installer par job, ou utiliser une image avec newman pré-installé
+    - newman run src/test/postman/Galactic_Shelter.postman_collection.json \
+      --reporters cli,junit \
+      --reporter-junit-export newman-results.xml
+
+# ------------------------------------------------------
+# 6) E2E TESTS (Cypress)
+# ------------------------------------------------------
+e2e_tests:
+  stage: e2e
+  image:
+    name: cypress/included:15.2.0
+    entrypoint: [""]
+  needs:
+    - build_backend
+    - build_frontend
+  before_script:
+    - apt-get update && apt-get install -y openjdk-21-jdk
+    - cp ${BACKEND_DIR}/target/*.jar ./backend.jar
+    - java -jar backend.jar > backend.log 2>&1 & # Lance le backend
+
+    - npx http-server ${FRONTEND_DIR}/dist/galacticFront/browser -p 4200 --host 0.0.0.0 > frontend.log 2>&1 &
+    - echo "Frontend is ready!"
+
+    - npm install -g wait-on http-server
+    - cd ${FRONTEND_DIR} # Assurez-vous d'être dans le répertoire du frontend où se trouve cypress
+    - npx cypress install
+  script:
+    - npx wait-on http://127.0.0.1:9000/actuator/health http://127.0.0.1:4200 --timeout 60000
+    - npx cypress run --browser chrome --config baseUrl=http://127.0.0.1:4200
+  artifacts:
+    when:
+    paths:
+      - backend.log
+      - frontend.log
