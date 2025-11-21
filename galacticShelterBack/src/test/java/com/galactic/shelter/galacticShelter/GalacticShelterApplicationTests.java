@@ -21,8 +21,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@ActiveProfiles("test")
-@Sql("/test-data.sql")
 class GalacticShelterApplicationTests {
 
 	@Autowired
